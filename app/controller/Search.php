@@ -13,10 +13,10 @@ class Search {
         return json($result);
     }
     public function detail() {
-    $partNo = Request::param('part_no');
-    $detail = \app\model\PartsExtra::where('part_no', $partNo)
+      $partNo = Request::param('part_no');
+      $detail = PartsExtra::where('part_no', $partNo)
                                   ->field('warranty, rohs_compliant, eccn_code, hts_code, warehouse_code, certificate_origin, packing, date_code_range')
                                   ->find();
-    return json($detail);
-}
+      return json($detail);
+    }
 }
