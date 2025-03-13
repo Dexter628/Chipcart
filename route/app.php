@@ -15,3 +15,8 @@ Route::get('/api/count', 'index/getCount');
 
 // 更新计数，自增或者清零
 Route::post('/api/count', 'index/updateCount');
+// 搜索接口
+Route::get('search', 'Search/index');   
+
+// 详情接口
+Route::get('detail', 'Search/detail');    
