@@ -4,8 +4,9 @@
     "\\app",
     "\\app\\controller",
     "\\app\\model",
+    "\\config",
     "\\route"
   ],
-  "SelectedNode": "\\route\\app.php",
+  "SelectedNode": "\\config\\database.php",
   "PreviewInSolutionExplorer": false
 }

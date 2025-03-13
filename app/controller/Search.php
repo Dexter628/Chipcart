@@ -1,7 +1,7 @@
 <?php
 namespace app\controller;
-use app\model\PartsMain
-use app\model\PartsExtra
+use app\model\PartsMain;
+use app\model\PartsExtra;
 use think\facade\Request;
 
 class Search {
