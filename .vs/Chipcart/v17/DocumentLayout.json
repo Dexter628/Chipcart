@@ -7,6 +7,10 @@
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:app\\controller\\Search.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\controller\\Index.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:app\\controller\\Index.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\route\\app.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:route\\app.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
@@ -19,16 +23,12 @@
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:app\\model\\PartsMain.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\config\\database.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:config\\database.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\controller\\Index.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:app\\controller\\Index.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\model\\Counters.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:app\\model\\Counters.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\config\\database.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:config\\database.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -50,28 +50,29 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "app.php",
               "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\route\\app.php",
               "RelativeDocumentMoniker": "route\\app.php",
               "ToolTip": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\route\\app.php",
               "RelativeToolTip": "route\\app.php",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAkAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEjSURBVDhPtZMhjoNAFIZ/NghERQUCUYHhACQIDoBDQrIkHGENB0CQVFduEL3AOmxJkAgcQaAqISEEgwM3S\u002BmEQNtFlOyX/MzMmzd/5r0wzNcnIXiT75/hQw3e0u3sxzDZxMKADJe5qSgKHI9HsCyL3W6HIAjQdR2u1ysMw6DZd1g6TjiOA57n4boukiTB4XCAqqowTROapqGua5p556mELMsQhiHatsV\u002Bv0ee5xAEAZ7nIYoixHFMMynzJs5J05RwHDfGFUUh5/N5jPu\u002Bv95Ey7IgSRJkWUbf99B1faz7dDrhcrlgMKOZlMcbiKI4rW\u002BybZtUVTXuNU1DBrNpbzw7N1jT0Myn2MsS/qIsSzpb8j8/0qPWWBgwDPNSa2wuYdNzBoBfjkHDblb94aEAAAAASUVORK5CYII=",
               "WhenOpened": "2025-03-13T14:42:44.898Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 1,
               "Title": "Index.php",
               "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\controller\\Index.php",
               "RelativeDocumentMoniker": "app\\controller\\Index.php",
               "ToolTip": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\controller\\Index.php",
               "RelativeToolTip": "app\\controller\\Index.php",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACkAAAAsAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEjSURBVDhPtZMhjoNAFIZ/NghERQUCUYHhACQIDoBDQrIkHGENB0CQVFduEL3AOmxJkAgcQaAqISEEgwM3S\u002BmEQNtFlOyX/MzMmzd/5r0wzNcnIXiT75/hQw3e0u3sxzDZxMKADJe5qSgKHI9HsCyL3W6HIAjQdR2u1ysMw6DZd1g6TjiOA57n4boukiTB4XCAqqowTROapqGua5p556mELMsQhiHatsV\u002Bv0ee5xAEAZ7nIYoixHFMMynzJs5J05RwHDfGFUUh5/N5jPu\u002Bv95Ey7IgSRJkWUbf99B1faz7dDrhcrlgMKOZlMcbiKI4rW\u002BybZtUVTXuNU1DBrNpbzw7N1jT0Myn2MsS/qIsSzpb8j8/0qPWWBgwDPNSa2wuYdNzBoBfjkHDblb94aEAAAAASUVORK5CYII=",
-              "WhenOpened": "2025-03-13T14:42:01.462Z"
+              "WhenOpened": "2025-03-13T14:42:01.462Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -81,40 +82,40 @@
               "RelativeDocumentMoniker": "app\\controller\\Search.php",
               "ToolTip": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\controller\\Search.php",
               "RelativeToolTip": "app\\controller\\Search.php",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAeAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAABVAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEjSURBVDhPtZMhjoNAFIZ/NghERQUCUYHhACQIDoBDQrIkHGENB0CQVFduEL3AOmxJkAgcQaAqISEEgwM3S\u002BmEQNtFlOyX/MzMmzd/5r0wzNcnIXiT75/hQw3e0u3sxzDZxMKADJe5qSgKHI9HsCyL3W6HIAjQdR2u1ysMw6DZd1g6TjiOA57n4boukiTB4XCAqqowTROapqGua5p556mELMsQhiHatsV\u002Bv0ee5xAEAZ7nIYoixHFMMynzJs5J05RwHDfGFUUh5/N5jPu\u002Bv95Ey7IgSRJkWUbf99B1faz7dDrhcrlgMKOZlMcbiKI4rW\u002BybZtUVTXuNU1DBrNpbzw7N1jT0Myn2MsS/qIsSzpb8j8/0qPWWBgwDPNSa2wuYdNzBoBfjkHDblb94aEAAAAASUVORK5CYII=",
               "WhenOpened": "2025-03-13T14:41:45.111Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "PartsExtra.php",
               "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\model\\PartsExtra.php",
               "RelativeDocumentMoniker": "app\\model\\PartsExtra.php",
               "ToolTip": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\model\\PartsExtra.php",
               "RelativeToolTip": "app\\model\\PartsExtra.php",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAQAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAFAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEjSURBVDhPtZMhjoNAFIZ/NghERQUCUYHhACQIDoBDQrIkHGENB0CQVFduEL3AOmxJkAgcQaAqISEEgwM3S\u002BmEQNtFlOyX/MzMmzd/5r0wzNcnIXiT75/hQw3e0u3sxzDZxMKADJe5qSgKHI9HsCyL3W6HIAjQdR2u1ysMw6DZd1g6TjiOA57n4boukiTB4XCAqqowTROapqGua5p556mELMsQhiHatsV\u002Bv0ee5xAEAZ7nIYoixHFMMynzJs5J05RwHDfGFUUh5/N5jPu\u002Bv95Ey7IgSRJkWUbf99B1faz7dDrhcrlgMKOZlMcbiKI4rW\u002BybZtUVTXuNU1DBrNpbzw7N1jT0Myn2MsS/qIsSzpb8j8/0qPWWBgwDPNSa2wuYdNzBoBfjkHDblb94aEAAAAASUVORK5CYII=",
               "WhenOpened": "2025-03-13T14:41:00.874Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "PartsMain.php",
               "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\model\\PartsMain.php",
               "RelativeDocumentMoniker": "app\\model\\PartsMain.php",
               "ToolTip": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\model\\PartsMain.php",
               "RelativeToolTip": "app\\model\\PartsMain.php",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAFAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEjSURBVDhPtZMhjoNAFIZ/NghERQUCUYHhACQIDoBDQrIkHGENB0CQVFduEL3AOmxJkAgcQaAqISEEgwM3S\u002BmEQNtFlOyX/MzMmzd/5r0wzNcnIXiT75/hQw3e0u3sxzDZxMKADJe5qSgKHI9HsCyL3W6HIAjQdR2u1ysMw6DZd1g6TjiOA57n4boukiTB4XCAqqowTROapqGua5p556mELMsQhiHatsV\u002Bv0ee5xAEAZ7nIYoixHFMMynzJs5J05RwHDfGFUUh5/N5jPu\u002Bv95Ey7IgSRJkWUbf99B1faz7dDrhcrlgMKOZlMcbiKI4rW\u002BybZtUVTXuNU1DBrNpbzw7N1jT0Myn2MsS/qIsSzpb8j8/0qPWWBgwDPNSa2wuYdNzBoBfjkHDblb94aEAAAAASUVORK5CYII=",
               "WhenOpened": "2025-03-13T14:39:46.494Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 5,
               "Title": "Counters.php",
               "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\model\\Counters.php",
               "RelativeDocumentMoniker": "app\\model\\Counters.php",
@@ -122,17 +123,18 @@
               "RelativeToolTip": "app\\model\\Counters.php",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAcAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEjSURBVDhPtZMhjoNAFIZ/NghERQUCUYHhACQIDoBDQrIkHGENB0CQVFduEL3AOmxJkAgcQaAqISEEgwM3S\u002BmEQNtFlOyX/MzMmzd/5r0wzNcnIXiT75/hQw3e0u3sxzDZxMKADJe5qSgKHI9HsCyL3W6HIAjQdR2u1ysMw6DZd1g6TjiOA57n4boukiTB4XCAqqowTROapqGua5p556mELMsQhiHatsV\u002Bv0ee5xAEAZ7nIYoixHFMMynzJs5J05RwHDfGFUUh5/N5jPu\u002Bv95Ey7IgSRJkWUbf99B1faz7dDrhcrlgMKOZlMcbiKI4rW\u002BybZtUVTXuNU1DBrNpbzw7N1jT0Myn2MsS/qIsSzpb8j8/0qPWWBgwDPNSa2wuYdNzBoBfjkHDblb94aEAAAAASUVORK5CYII=",
-              "WhenOpened": "2025-03-13T14:39:02.38Z"
+              "WhenOpened": "2025-03-13T14:39:02.38Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 6,
               "Title": "database.php",
               "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\config\\database.php",
               "RelativeDocumentMoniker": "config\\database.php",
               "ToolTip": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\config\\database.php",
               "RelativeToolTip": "config\\database.php",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAAACAAAAAzAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAAzAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEjSURBVDhPtZMhjoNAFIZ/NghERQUCUYHhACQIDoBDQrIkHGENB0CQVFduEL3AOmxJkAgcQaAqISEEgwM3S\u002BmEQNtFlOyX/MzMmzd/5r0wzNcnIXiT75/hQw3e0u3sxzDZxMKADJe5qSgKHI9HsCyL3W6HIAjQdR2u1ysMw6DZd1g6TjiOA57n4boukiTB4XCAqqowTROapqGua5p556mELMsQhiHatsV\u002Bv0ee5xAEAZ7nIYoixHFMMynzJs5J05RwHDfGFUUh5/N5jPu\u002Bv95Ey7IgSRJkWUbf99B1faz7dDrhcrlgMKOZlMcbiKI4rW\u002BybZtUVTXuNU1DBrNpbzw7N1jT0Myn2MsS/qIsSzpb8j8/0qPWWBgwDPNSa2wuYdNzBoBfjkHDblb94aEAAAAASUVORK5CYII=",
               "WhenOpened": "2025-03-13T14:12:13.16Z",
               "EditorCaption": ""
