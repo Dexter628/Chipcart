@@ -3,8 +3,9 @@ namespace app\controller;
 
 use think\facade\Request;
 use think\facade\Db;
+use think\Controller;
 
-class ChipSearch 
+class ChipSearch extends Controller 
 {
     public function search()
     {
