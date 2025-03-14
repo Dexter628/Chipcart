@@ -23,3 +23,5 @@ Route::get('/api/count', 'index/getCount');
 Route::post('/api/count', 'index/updateCount');
 
 Route::get('parts/search', 'parts/search');
+
+Route::get('parts/search', 'ChipSearch/search');

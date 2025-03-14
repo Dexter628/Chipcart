@@ -4,6 +4,7 @@ namespace app\controller;
 use app\model\PartsMain;
 use app\model\PartsExtra;
 use think\facade\Request;
+use think\facade\Db;
 
 class Search {
     /**
