@@ -26,24 +26,4 @@ class Search {
 
         return json($result);
     }
-
-    /**
-     * 查詢指定 part_no 的額外信息
-     */
-    public function detail() {
-        $partNo = Request::param('part_no', '', 'trim');
-        if (empty($partNo)) {
-            return json(['error' => '請提供 part_no 參數'], 400);
-        }
-
-        $detail = PartsExtra::where('part_no', $partNo)
-                            ->field('warranty, rohs_compliant, eccn_code, hts_code, warehouse_code, certificate_origin, packing, date_code_range')
-                            ->find();
-
-        if (!$detail) {
-            return json(['error' => '未找到額外信息'], 404);
-        }
-
-        return json($detail);
-    }
 }

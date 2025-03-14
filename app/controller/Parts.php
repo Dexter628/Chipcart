@@ -11,12 +11,9 @@ class Parts extends Controller {
             return json(['error' => '缺少 part_no 參數']);
         }
 
-        $main = Db::name('parts_main')->where('part_no', $part_no)->find();
+        $main = Db::name('parts')->where('part_no', $part_no)->find();
         if (!$main) {
             return json(['error' => '未找到此芯片']);
         }
-
-        $extra = Db::name('parts_extra')->where('part_no', $part_no)->find();
-        return json(['main' => $main, 'extra' => $extra]);
     }
 }

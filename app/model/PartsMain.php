@@ -6,6 +6,6 @@ use think\Model;
 // Counters 定义数据库model
 class PartsMain extends Model
 {
-    protected $table = 'parts_main';
+    protected $table = 'parts';
     protected $pk = 'id';
 }
