@@ -18,7 +18,13 @@ class Search {
 
         $result = PartsMain::where('part_no', 'like', "%$keyword%")
                            ->whereOr('manufacturer_name', 'like', "%$keyword%")
-                           ->field('part_no, manufacturer_name, available_qty, lead_time, price, currency, tax_included, moq, spq, order_increment, qty_1, qty_1_price, qty_2, qty_2_price, qty_3, qty_3_price')
+                           ->field('
+                    id, part_no, manufacturer_name, available_qty, lead_time, price, currency, 
+                    tax_included as tax_include, moq, spq, order_increment, qty_1, qty_1_price, 
+                    qty_2, qty_2_price, qty_3, qty_3_price, warranty, rohs_compliant, eccn_code, 
+                    hts_code, warehouse_code, certificate_origin, packing, date_code_range, 
+                    package, package_type, price_validity, contact, part_description
+                ')
                            ->select();
 
         if ($result->isEmpty()) {
