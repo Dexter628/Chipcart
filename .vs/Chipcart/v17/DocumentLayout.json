@@ -3,16 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\controller\\ChipSearch.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:app\\controller\\ChipSearch.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\controller\\Search.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:app\\controller\\Search.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\route\\app.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:route\\app.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\controller\\ChipSearch.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:app\\controller\\ChipSearch.php||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\controller\\Index.php||{3B902123-F8A7-4915-9F01-361F908088D0}",
@@ -46,7 +46,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -58,13 +58,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "ChipSearch.php",
               "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\controller\\ChipSearch.php",
               "RelativeDocumentMoniker": "app\\controller\\ChipSearch.php",
               "ToolTip": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\controller\\ChipSearch.php",
               "RelativeToolTip": "app\\controller\\ChipSearch.php",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACUAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAANAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEjSURBVDhPtZMhjoNAFIZ/NghERQUCUYHhACQIDoBDQrIkHGENB0CQVFduEL3AOmxJkAgcQaAqISEEgwM3S\u002BmEQNtFlOyX/MzMmzd/5r0wzNcnIXiT75/hQw3e0u3sxzDZxMKADJe5qSgKHI9HsCyL3W6HIAjQdR2u1ysMw6DZd1g6TjiOA57n4boukiTB4XCAqqowTROapqGua5p556mELMsQhiHatsV\u002Bv0ee5xAEAZ7nIYoixHFMMynzJs5J05RwHDfGFUUh5/N5jPu\u002Bv95Ey7IgSRJkWUbf99B1faz7dDrhcrlgMKOZlMcbiKI4rW\u002BybZtUVTXuNU1DBrNpbzw7N1jT0Myn2MsS/qIsSzpb8j8/0qPWWBgwDPNSa2wuYdNzBoBfjkHDblb94aEAAAAASUVORK5CYII=",
               "WhenOpened": "2025-03-14T03:03:31.639Z",
               "EditorCaption": ""
@@ -79,12 +79,11 @@
               "RelativeToolTip": "app\\controller\\Parts.php",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAFAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEjSURBVDhPtZMhjoNAFIZ/NghERQUCUYHhACQIDoBDQrIkHGENB0CQVFduEL3AOmxJkAgcQaAqISEEgwM3S\u002BmEQNtFlOyX/MzMmzd/5r0wzNcnIXiT75/hQw3e0u3sxzDZxMKADJe5qSgKHI9HsCyL3W6HIAjQdR2u1ysMw6DZd1g6TjiOA57n4boukiTB4XCAqqowTROapqGua5p556mELMsQhiHatsV\u002Bv0ee5xAEAZ7nIYoixHFMMynzJs5J05RwHDfGFUUh5/N5jPu\u002Bv95Ey7IgSRJkWUbf99B1faz7dDrhcrlgMKOZlMcbiKI4rW\u002BybZtUVTXuNU1DBrNpbzw7N1jT0Myn2MsS/qIsSzpb8j8/0qPWWBgwDPNSa2wuYdNzBoBfjkHDblb94aEAAAAASUVORK5CYII=",
-              "WhenOpened": "2025-03-14T00:47:24.301Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-14T00:47:24.301Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "app.php",
               "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\route\\app.php",
               "RelativeDocumentMoniker": "route\\app.php",
@@ -110,13 +109,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Search.php",
               "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\controller\\Search.php",
               "RelativeDocumentMoniker": "app\\controller\\Search.php",
               "ToolTip": "C:\\Users\\Administrator\\source\\repos\\Dexter628\\Chipcart\\app\\controller\\Search.php",
               "RelativeToolTip": "app\\controller\\Search.php",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAA5AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEjSURBVDhPtZMhjoNAFIZ/NghERQUCUYHhACQIDoBDQrIkHGENB0CQVFduEL3AOmxJkAgcQaAqISEEgwM3S\u002BmEQNtFlOyX/MzMmzd/5r0wzNcnIXiT75/hQw3e0u3sxzDZxMKADJe5qSgKHI9HsCyL3W6HIAjQdR2u1ysMw6DZd1g6TjiOA57n4boukiTB4XCAqqowTROapqGua5p556mELMsQhiHatsV\u002Bv0ee5xAEAZ7nIYoixHFMMynzJs5J05RwHDfGFUUh5/N5jPu\u002Bv95Ey7IgSRJkWUbf99B1faz7dDrhcrlgMKOZlMcbiKI4rW\u002BybZtUVTXuNU1DBrNpbzw7N1jT0Myn2MsS/qIsSzpb8j8/0qPWWBgwDPNSa2wuYdNzBoBfjkHDblb94aEAAAAASUVORK5CYII=",
               "WhenOpened": "2025-03-13T14:41:45.111Z",
               "EditorCaption": ""
@@ -143,8 +142,7 @@
               "RelativeToolTip": "app\\model\\PartsMain.php",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEjSURBVDhPtZMhjoNAFIZ/NghERQUCUYHhACQIDoBDQrIkHGENB0CQVFduEL3AOmxJkAgcQaAqISEEgwM3S\u002BmEQNtFlOyX/MzMmzd/5r0wzNcnIXiT75/hQw3e0u3sxzDZxMKADJe5qSgKHI9HsCyL3W6HIAjQdR2u1ysMw6DZd1g6TjiOA57n4boukiTB4XCAqqowTROapqGua5p556mELMsQhiHatsV\u002Bv0ee5xAEAZ7nIYoixHFMMynzJs5J05RwHDfGFUUh5/N5jPu\u002Bv95Ey7IgSRJkWUbf99B1faz7dDrhcrlgMKOZlMcbiKI4rW\u002BybZtUVTXuNU1DBrNpbzw7N1jT0Myn2MsS/qIsSzpb8j8/0qPWWBgwDPNSa2wuYdNzBoBfjkHDblb94aEAAAAASUVORK5CYII=",
-              "WhenOpened": "2025-03-13T14:39:46.494Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-13T14:39:46.494Z"
             },
             {
               "$type": "Document",
