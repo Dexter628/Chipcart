@@ -1,38 +1,85 @@
 <?php
-// 請先下載 SimpleXLSX.php 並放在此檔案相同目錄中
-require_once __DIR__ . '/SimpleXLSX.php';
+// 這個範例不依賴外部解析庫，而是用內建 ZipArchive 及 SimpleXML 解析 XLSX
 
-if (!class_exists('SimpleXLSX')) {
-    die("SimpleXLSX 類別未正確載入");
-} else {
-    echo "SimpleXLSX 類別載入成功";
+/**
+ * 解析 XLSX 檔案，返回二维陣列，每個元素為一行資料（第一列為表頭）。
+ * 此函式為簡易實作，僅適用於基本的 XLSX 檔案。
+ *
+ * @param string $filePath XLSX 檔案路徑
+ * @return array|false 成功返回二維陣列，失敗返回 false
+ */
+function readXLSX($filePath) {
+    $zip = new ZipArchive;
+    if ($zip->open($filePath) === true) {
+        // 讀取 sharedStrings.xml
+        $sharedStrings = [];
+        $sharedStringsXML = $zip->getFromName('xl/sharedStrings.xml');
+        if ($sharedStringsXML) {
+            $xml = simplexml_load_string($sharedStringsXML);
+            // 注意：有些檔案可能不含 <si> 標籤
+            if ($xml && isset($xml->si)) {
+                foreach ($xml->si as $si) {
+                    // 有時候 <si> 直接有 <t>，有時候有多個 <r>
+                    if (isset($si->t)) {
+                        $sharedStrings[] = (string)$si->t;
+                    } else {
+                        $text = '';
+                        foreach ($si->r as $r) {
+                            $text .= (string)$r->t;
+                        }
+                        $sharedStrings[] = $text;
+                    }
+                }
+            }
+        }
+        // 讀取第一個工作表 xl/worksheets/sheet1.xml
+        $sheetXML = $zip->getFromName('xl/worksheets/sheet1.xml');
+        if (!$sheetXML) {
+            $zip->close();
+            return false;
+        }
+        $xml = simplexml_load_string($sheetXML);
+        $rows = [];
+        if (isset($xml->sheetData->row)) {
+            foreach ($xml->sheetData->row as $row) {
+                $rowData = [];
+                foreach ($row->c as $c) {
+                    $value = (string)$c->v;
+                    $type = (string)$c['t']; // 若為 s 表示使用 shared string
+                    if ($type === 's') {
+                        $index = intval($value);
+                        $value = isset($sharedStrings[$index]) ? $sharedStrings[$index] : $value;
+                    }
+                    $rowData[] = $value;
+                }
+                $rows[] = $rowData;
+            }
+        }
+        $zip->close();
+        return $rows;
+    }
+    return false;
 }
 
-// 因為使用 ThinkPHP 的資料庫連線設定，所以引入 Db 類
-use think\Db;
-
-// 若要模擬，這裡直接輸出最終轉換結果；正式環境中可改為執行 Db::name('chip_db')->insert($data)
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excel_file'])) {
-    if ($_FILES['excel_file']['error'] == UPLOAD_ERR_OK) {
+// -------------------------
+// 下面為模擬 Excel 解析並映射到資料庫資料格式的完整程式
+// -------------------------
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
+    if ($_FILES['excel_file']['error'] === UPLOAD_ERR_OK) {
         $filePath = $_FILES['excel_file']['tmp_name'];
-        
-        // 解析 Excel 檔案（支援 xls 與 xlsx）
-        if (!$xlsx = SimpleXLSX::parse($filePath)) {
-            exit("解析 Excel 文件失敗: " . SimpleXLSX::parseError());
+        $rows = readXLSX($filePath);
+        if (!$rows) {
+            exit("解析 Excel 文件失敗。");
         }
-        
-        $rows = $xlsx->rows();
         if (count($rows) < 2) {
             exit("Excel 文件中沒有足夠的數據。");
         }
-        
-        // 第一列作為表頭
+        // 第一列視為表頭
         $headers = $rows[0];
         
         /* 
-          定義資料庫欄位對應的 Excel 表頭別名（可根據需求調整）  
-          這裡只針對您這份 Excel 主要欄位進行映射，缺少的欄位預設為空值。
+          定義資料庫欄位對應的 Excel 表頭關鍵字（部分欄位根據需求匹配）
+          可根據需要調整或擴充
         */
         $fieldsMap = array(
             'part_no'            => array('Your internal Part id', 'Part No.', 'PartNo', '型号', 'Manufacturer Part Number', 'PART NO'),
@@ -42,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excel_file'])) {
             'moq'                => array('Minimum Order Quantity', 'MOQ', '起订量'),
             'order_increment'    => array('Order Increment / Pack Qty', 'Pack Qty', 'Order Increment'),
             'date_code_range'    => array('Date Code Range', 'DC', 'DateCode', '批号'),
-            // 價格欄位：可從 "Resale (web price)" 或 "Cost (USD)" 判斷，這裡統一映射為 price
             'price'              => array('Resale (web price)', 'Cost (USD)', 'Cost'),
             'certificate_origin' => array('Country Of Origin', 'CO,'),
             'warranty'           => array('Warranty / Pedigree Rating', 'Warranty', 'Pedigree Rating'),
@@ -56,8 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excel_file'])) {
             'qty_2'              => array('Qty 2 (pcs)', 'Qty 2'),
             'qty_2_price'        => array('Qty 2 price (USD)', 'Qty 2 price'),
             'qty_3'              => array('Qty 3 (pcs)', 'Qty 3'),
-            'qty_3_price'        => array('Qty 3 price (USD)', 'Qty 3 price'),
-            // 其它欄位可根據需要擴充...
+            'qty_3_price'        => array('Qty 3 price (USD)', 'Qty 3 price')
         );
         
         // 建立 Excel 表頭（索引） 與 資料庫欄位的對應關係
@@ -73,19 +118,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excel_file'])) {
             }
         }
         
-        // 處理價格欄位，檢查是否帶有貨幣資訊 (例如 "(USD)")
-        $detectedCurrency = '';
+        // 檢查是否有價格欄位帶 "(USD)" 的資訊，以判斷貨幣
+        $detectedCurrency = 'USD'; // 此處預設為 USD，您也可根據需要進行調整
         foreach ($headers as $header) {
             if (preg_match('/\((.*?)\)/', $header, $matches)) {
                 $curr = strtoupper(trim($matches[1]));
-                if ($curr == 'USD') {
+                if ($curr === 'USD') {
                     $detectedCurrency = 'USD';
                     break;
                 }
             }
-        }
-        if (!$detectedCurrency) {
-            $detectedCurrency = 'USD'; // 預設為 USD
         }
         
         // 模擬將每一行數據轉換為資料庫格式
@@ -93,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excel_file'])) {
         // 從第二列開始（第一列為表頭）
         foreach (array_slice($rows, 1) as $row) {
             $data = array();
-            // 根據 mapping 取得欄位數值；若無對應則設為空字串
+            // 根據 mapping 取得各欄位數值；若無對應則設為空字串
             foreach ($fieldsMap as $field => $aliases) {
                 $data[$field] = isset($colMapping[$field]) && isset($row[$colMapping[$field]])
                                   ? trim($row[$colMapping[$field]])
@@ -106,16 +148,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excel_file'])) {
             if ($detectedCurrency === 'USD') {
                 $data['tax_included'] = 0;
             } else {
-                // 若為人民幣等，可根據需求判斷，此處預設 1 表示含稅
                 $data['tax_included'] = 1;
             }
             
             // 自動填入更新時間
             $data['update_time'] = date('Y-m-d H:i:s');
             
-            // 實際應用中，您可使用 ThinkPHP 的 Db 類將 $data 插入 chip_db 表，例如：
-            // Db::name('chip_db')->insert($data);
-            // 這裡僅模擬插入，將結果存入陣列
+            // 模擬「插入」：實際應用中可使用 ThinkPHP Db::name('chip_db')->insert($data)
             $insertedData[] = $data;
         }
         
@@ -127,18 +166,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excel_file'])) {
         echo "檔案上傳失敗。";
     }
 } else {
-    // 未上傳檔案時顯示上傳表單
+    // 顯示上傳表單
     ?>
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
-        <title>Excel 上傳導入模擬</title>
+        <title>Excel 上傳導入（原生解析 XLSX）</title>
     </head>
     <body>
-        <h2>上傳 Excel 文件 (xls 或 xlsx)</h2>
+        <h2>上傳 Excel 文件 (僅限 XLSX 格式)</h2>
         <form action="" method="post" enctype="multipart/form-data">
-            <input type="file" name="excel_file" accept=".xls,.xlsx" required>
+            <input type="file" name="excel_file" accept=".xlsx" required>
             <br><br>
             <input type="submit" value="上傳並模擬導入數據">
         </form>
