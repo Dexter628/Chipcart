@@ -7,7 +7,6 @@
 #  RewriteRule ^(.*)$ index.php/$1 [QSA,PT,L]
 #</IfModule>
 <IfModule mod_rewrite.c>
-DirectoryIndex index.html index.php
 RewriteEngine on
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f

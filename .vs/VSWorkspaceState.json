@@ -2,13 +2,15 @@
   "ExpandedNodes": [
     "",
     "\\app",
-    "\\app\\controller",
     "\\app\\model",
+    "\\app\\view",
     "\\conf",
     "\\config",
     "\\public",
-    "\\route"
+    "\\route",
+    "\\runtime",
+    "\\vendor"
   ],
-  "SelectedNode": "\\app\\controller\\Index.php",
+  "SelectedNode": "\\route\\app.php",
   "PreviewInSolutionExplorer": false
 }
