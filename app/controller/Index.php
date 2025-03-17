@@ -1,6 +1,6 @@
 <?php
 // 請先下載 SimpleXLSX.php 並放在此檔案相同目錄中
-require_once __DIR__ . '/app/controller/SimpleXLSX.php';
+require_once '/app/controller/SimpleXLSX.php';
 if (!class_exists('SimpleXLSX')) {
     die("SimpleXLSX 類別未正確載入");
 } else {
