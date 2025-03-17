@@ -86,9 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         // 定義資料庫欄位對應的 Excel 表頭關鍵字（只要表頭中包含關鍵字即可匹配）
         //=================================================================
         $fieldsMap = array(
-            'part_no'            => array('P/N', 'Part No.', 'PartNo', '型号', 'Your internal Part id', 'Manufacturer Part Number', 'PART NO'),
-            'manufacturer_name'  => array('MFG', 'MNF', 'Mfg', '厂商', 'Manufacturer Name', 'BRAND'),
-            'available_qty'      => array('QTY', 'Quantity', '数量', 'Quantity (free on Hand)', 'QUANTITY'),
+            'part_no'            => array('P/N', 'Part No.', 'PartNo', '型号','*型号', 'Your internal Part id', 'Manufacturer Part Number', 'PART NO'),
+            'manufacturer_name'  => array('MFG', 'MNF', 'Mfg', '厂商','*厂商', 'Manufacturer Name', 'BRAND'),
+            'available_qty'      => array('QTY', 'Quantity', '数量','*数量', 'Quantity (free on Hand)', 'QUANTITY'),
             'lead_time'          => array('L/T', 'LeadTime'),
             'price'              => array('PRICE', 'Cost', '销售价', '人民币', '美金'),
             'currency'           => array('Currency', 'USD', 'usd', 'rmb', 'RMB', 'CNY', 'cny', 'cn', 'us'),
