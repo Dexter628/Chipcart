@@ -9,6 +9,6 @@
     "\\public",
     "\\route"
   ],
-  "SelectedNode": "\\conf\\php.ini",
+  "SelectedNode": "\\app\\controller\\Index.php",
   "PreviewInSolutionExplorer": false
 }
