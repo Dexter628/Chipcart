@@ -1,6 +1,6 @@
 <?php
 // 請先下載 SimpleXLSX.php 並放在此檔案相同目錄中
-require_once 'SimpleXLSX.php';
+require_once __DIR__ . '/SimpleXLSX.php';
 
 // 因為使用 ThinkPHP 的資料庫連線設定，所以引入 Db 類
 use think\Db;
