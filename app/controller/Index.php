@@ -1,11 +1,13 @@
 <?php
 // 請先下載 SimpleXLSX.php 並放在此檔案相同目錄中
-require_once __DIR__ . 'SimpleXLSX.php';
+require_once __DIR__ . '/SimpleXLSX.php';
+
 if (!class_exists('SimpleXLSX')) {
     die("SimpleXLSX 類別未正確載入");
 } else {
     echo "SimpleXLSX 類別載入成功";
 }
+
 // 因為使用 ThinkPHP 的資料庫連線設定，所以引入 Db 類
 use think\Db;
 
