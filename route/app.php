@@ -25,8 +25,3 @@ Route::get('/detail', 'Search/detail');
 Route::get('parts/search', 'parts/search');
 
 Route::get('parts/search', 'ChipSearch/search');
-
-Route::get('/', 'index/index');
-
-// 分段上傳提交路由，對應 POST 請求至 Upload/upload 方法
-Route::post('index/index', 'index/upload');
