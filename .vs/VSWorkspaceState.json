@@ -4,8 +4,11 @@
     "\\app",
     "\\app\\controller",
     "\\app\\model",
+    "\\conf",
     "\\config",
+    "\\public",
     "\\route"
   ],
+  "SelectedNode": "\\route\\app.php",
   "PreviewInSolutionExplorer": false
 }

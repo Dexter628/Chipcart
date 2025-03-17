@@ -17,10 +17,10 @@ Route::get('/search', 'Search/index');
 Route::get('/detail', 'Search/detail');    
 
 // 获取当前计数
-Route::get('/api/count', 'index/getCount');
+//Route::get('/api/count', 'index/getCount');
 
 // 更新计数，自增或者清零
-Route::post('/api/count', 'index/updateCount');
+//Route::post('/api/count', 'index/updateCount');
 
 Route::get('parts/search', 'parts/search');
 
