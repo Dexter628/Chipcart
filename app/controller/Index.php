@@ -1,4 +1,14 @@
 <?php
+// 設定檔案上傳目錄（請確保該目錄存在且具有寫入權限）
+$uploadDir = __DIR__ . '/uploads/';
+if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0777, true);
+}
+
+/**
+ * 以下為 Excel 解析相關函式，使用 shell_exec 與 unzip 搭配正則解析 XLSX 文件
+ */
+
 /**
  * 將儲存格參考字母轉為 0-based 欄位索引
  * 例如："A" => 0, "B" => 1, "AA" => 26
@@ -17,8 +27,8 @@ function colIndexFromLetter($letters) {
 }
 
 /**
- * 解析 XLSX 文件（僅適用於格式較簡單的 XLSX），
- * 利用 shell_exec 搭配 unzip 命令提取 xl/sharedStrings.xml 與 xl/worksheets/sheet1.xml，
+ * 解析 XLSX 文件（僅適用於格式較簡單的 XLSX）
+ * 利用 shell_exec 與 unzip 命令提取 xl/sharedStrings.xml 與 xl/worksheets/sheet1.xml，
  * 並使用正則式與 cell reference（r 屬性）還原正確欄位順序，補齊缺失欄位。
  *
  * @param string $filePath XLSX 檔案路徑
@@ -44,29 +54,24 @@ function readXLSXWithoutExtensions($filePath) {
     if (preg_match_all('/<row[^>]*>(.*?)<\/row>/s', $sheetXML, $rowMatches)) {
         foreach ($rowMatches[1] as $rowContent) {
             $rowDataTemp = [];
-            // 用正則捕捉每個儲存格，並取得 r 屬性（例如 r="B1"）與其內容
+            // 取得每個儲存格，捕捉 r 屬性與內容
             if (preg_match_all('/<c\s+[^>]*r="([A-Z]+)\d+"[^>]*>(.*?)<\/c>/s', $rowContent, $cellMatches, PREG_SET_ORDER)) {
                 foreach ($cellMatches as $cellMatch) {
-                    $colLetters = $cellMatch[1]; // 儲存格列字母
-                    $cellXmlContent = $cellMatch[2]; // 儲存格內部 XML
+                    $colLetters = $cellMatch[1];
+                    $cellXmlContent = $cellMatch[2];
                     $colIndex = colIndexFromLetter($colLetters);
-                    // 取得儲存格的型別 t 屬性（若有）
                     $cellType = "";
                     if (preg_match('/t="([^"]+)"/', $cellMatch[0], $tMatch)) {
                         $cellType = $tMatch[1];
                     }
                     $cellValue = "";
-                    // 優先從 <v> 標籤中取得數值
                     if (preg_match('/<v>(.*?)<\/v>/s', $cellXmlContent, $vMatch)) {
                         $cellValue = $vMatch[1];
-                    }
-                    // 若無 <v> 且型別為 inlineStr，則從 <is><t> 中取值
-                    elseif ($cellType == "inlineStr") {
+                    } elseif ($cellType == "inlineStr") {
                         if (preg_match('/<is>.*?<t[^>]*>(.*?)<\/t>.*?<\/is>/s', $cellXmlContent, $inlineMatch)) {
                             $cellValue = $inlineMatch[1];
                         }
                     }
-                    // 若型別為共享字串 (s)，則用 sharedStrings 表取得真正值
                     if ($cellType === 's') {
                         $index = intval($cellValue);
                         $cellValue = isset($sharedStrings[$index]) ? $sharedStrings[$index] : $cellValue;
@@ -97,166 +102,191 @@ function normalizeHeader($str) {
     return trim(preg_replace('/^[\*\s]+/', '', $str));
 }
 
-//==================================================
-// 主程式：上傳 XLSX、解析並映射資料
-//==================================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
-    if ($_FILES['excel_file']['error'] === UPLOAD_ERR_OK) {
-        $filePath = $_FILES['excel_file']['tmp_name'];
-        $rows = readXLSXWithoutExtensions($filePath);
-        if (!$rows) {
-            exit("解析 Excel 文件失敗。");
-        }
-        if (count($rows) < 2) {
-            exit("Excel 文件中沒有足夠的數據。");
-        }
-        
-        // 取出第一列作為表頭，正規化後存入 $normHeaders
-        $headers = $rows[0];
-        $normHeaders = [];
-        foreach ($headers as $h) {
-            $normHeaders[] = normalizeHeader($h);
-        }
-        
-        /*
-         定義資料庫欄位對應的 Excel 表頭關鍵字（只要表頭中包含該關鍵字即可匹配），
-         此處同時包含簡體與繁體版本。
-        */
-        $fieldsMap = [
-            'part_no'            => ['P/N', 'Part No.', 'PartNo', '型号', 'Your internal Part id', 'Manufacturer Part Number', 'PART NO'],
-            'manufacturer_name'  => ['MFG', 'MNF', 'Mfg', '厂商', '廠商', 'Manufacturer Name', 'BRAND'],
-            'available_qty'      => ['QTY', 'Quantity', '数量', '數量', 'Quantity (free on Hand)', 'QUANTITY'],
-            'lead_time'          => ['L/T', 'LeadTime'],
-            'price'              => ['PRICE', 'Cost', '销售价', '銷售價', '人民币', '美金'],
-            'currency'           => ['Currency', 'USD', 'usd', 'rmb', 'RMB', 'CNY', 'cny', 'cn', 'us'],
-            'moq'                => ['MOQ', '起订量', '起訂量', 'Minimum Order Quantity'],
-            'spq'                => ['SPQ'],
-            'order_increment'    => ['Order Increment / Pack Qty', 'Pack Qty', 'Order Increment'],
-            'qty_1'              => ['Qty 1'],
-            'qty_1_price'        => ['Qty 1 price'],
-            'qty_2'              => ['Qty 2'],
-            'qty_2_price'        => ['Qty 2 price'],
-            'qty_3'              => ['Qty 3'],
-            'qty_3_price'        => ['Qty 3 price'],
-            'supplier_code'      => ['supplier code', '供应商代码', '供应商编码', '供应商代号', '供應商代號'],
-            // update_time 為自動填入當下時間，不做匹配
-            'warranty'           => ['Warranty / Pedigree Rating', 'Warranty', 'Pedigree Rating'],
-            'rohs_compliant'     => ['RoHS Compliant'],
-            'eccn_code'          => ['ECCN Code'],
-            'hts_code'           => ['HTS Code'],
-            'warehouse_code'     => ['仓库位置', 'Warehouse Code', '倉庫位置'],
-            'certificate_origin' => ['Country Of Origin', 'CO,'],
-            'packing'            => ['PACKING'],
-            'date_code_range'    => ['DC', 'DateCode', '批号', '批號', 'Date Code Range'],
-            'package'            => ['Package', '封装', '封裝', 'PACKAGE'],
-            'package_type'       => ['Package Type'],
-            'price_validity'     => ['Price validity'],
-            'contact'            => ['联络人', '聯絡人', '业务', '業務', 'contact'],
-            'part_description'   => ['产品参数', '產品參數', 'Part Description']
-            // tax_included 不直接匹配，後續特殊判斷
-        ];
-        
-        // 建立 Excel 表頭（索引）與資料庫欄位對應關係（使用正規化後的表頭）
-        $colMapping = [];
-        foreach ($normHeaders as $index => $normHeader) {
-            foreach ($fieldsMap as $field => $aliases) {
-                foreach ($aliases as $alias) {
-                    if (stripos($normHeader, $alias) !== false) {
-                        $colMapping[$field] = $index;
-                        break 2;
-                    }
+/**
+ * Excel 檔案後續解析處理：
+ * 根據預先定義的欄位對應規則，對表頭進行正規化並匹配，
+ * 再處理價格、貨幣及含税資訊，返回最終資料陣列
+ *
+ * @param array $rows 解析後的 Excel 二維陣列
+ * @return array 最終資料陣列
+ */
+function processExcelRows($rows) {
+    // 取出第一列表頭並正規化
+    $headers = $rows[0];
+    $normHeaders = [];
+    foreach ($headers as $h) {
+        $normHeaders[] = normalizeHeader($h);
+    }
+
+    // 定義欄位對應規則（包含簡繁體）
+    $fieldsMap = [
+        'part_no'            => ['P/N', 'Part No.', 'PartNo', '型号', 'Your internal Part id', 'Manufacturer Part Number', 'PART NO'],
+        'manufacturer_name'  => ['MFG', 'MNF', 'Mfg', '厂商', '廠商', 'Manufacturer Name', 'BRAND'],
+        'available_qty'      => ['QTY', 'Quantity', '数量', '數量', 'Quantity (free on Hand)', 'QUANTITY'],
+        'lead_time'          => ['L/T', 'LeadTime'],
+        'price'              => ['PRICE', 'Cost', '销售价', '銷售價', '人民币', '美金'],
+        'currency'           => ['Currency', 'USD', 'usd', 'rmb', 'RMB', 'CNY', 'cny', 'cn', 'us'],
+        'moq'                => ['MOQ', '起订量', '起訂量', 'Minimum Order Quantity'],
+        'spq'                => ['SPQ'],
+        'order_increment'    => ['Order Increment / Pack Qty', 'Pack Qty', 'Order Increment'],
+        'qty_1'              => ['Qty 1'],
+        'qty_1_price'        => ['Qty 1 price'],
+        'qty_2'              => ['Qty 2'],
+        'qty_2_price'        => ['Qty 2 price'],
+        'qty_3'              => ['Qty 3'],
+        'qty_3_price'        => ['Qty 3 price'],
+        'supplier_code'      => ['supplier code', '供应商代码', '供应商编码', '供应商代号', '供應商代號'],
+        // update_time 直接填入當下時間，不匹配
+        'warranty'           => ['Warranty / Pedigree Rating', 'Warranty', 'Pedigree Rating'],
+        'rohs_compliant'     => ['RoHS Compliant'],
+        'eccn_code'          => ['ECCN Code'],
+        'hts_code'           => ['HTS Code'],
+        'warehouse_code'     => ['仓库位置', 'Warehouse Code', '倉庫位置'],
+        'certificate_origin' => ['Country Of Origin', 'CO,'],
+        'packing'            => ['PACKING'],
+        'date_code_range'    => ['DC', 'DateCode', '批号', '批號', 'Date Code Range'],
+        'package'            => ['Package', '封装', '封裝', 'PACKAGE'],
+        'package_type'       => ['Package Type'],
+        'price_validity'     => ['Price validity'],
+        'contact'            => ['联络人', '聯絡人', '业务', '業務', 'contact'],
+        'part_description'   => ['产品参数', '產品參數', 'Part Description']
+        // tax_included 不直接匹配，後續特殊判斷
+    ];
+
+    // 建立表頭與欄位對應：以正規化後的表頭索引
+    $colMapping = [];
+    foreach ($normHeaders as $index => $normHeader) {
+        foreach ($fieldsMap as $field => $aliases) {
+            foreach ($aliases as $alias) {
+                if (stripos($normHeader, $alias) !== false) {
+                    $colMapping[$field] = $index;
+                    break 2;
                 }
             }
         }
-        
-        // 檢查是否有「含税」、「含稅」或「Tax Included」的欄位，若有則記錄該欄索引
-        $taxIncludedCol = null;
-        foreach ($normHeaders as $index => $normHeader) {
-            if (stripos($normHeader, 'Tax Included') !== false ||
-                stripos($normHeader, '含税') !== false ||
-                stripos($normHeader, '含稅') !== false) {
-                $taxIncludedCol = $index;
-                break;
-            }
+    }
+
+    // 檢查是否存在含税/含稅/Tax Included 的欄位
+    $taxIncludedCol = null;
+    foreach ($normHeaders as $index => $normHeader) {
+        if (stripos($normHeader, 'Tax Included') !== false ||
+            stripos($normHeader, '含税') !== false ||
+            stripos($normHeader, '含稅') !== false) {
+            $taxIncludedCol = $index;
+            break;
         }
-        
-        //=============================================
-        // 判斷貨幣：先看是否有 currency 欄位，若無則從 price 標題中解析
-        //=============================================
-        $detectedCurrency = "";
-        if (isset($colMapping['currency']) && isset($normHeaders[$colMapping['currency']])) {
-            $detectedCurrency = strtoupper(trim($normHeaders[$colMapping['currency']]));
+    }
+
+    // 判斷貨幣：優先取 currency 欄位，若無則從 price 標題中解析；若仍無則預設 USD
+    $detectedCurrency = "";
+    if (isset($colMapping['currency']) && isset($normHeaders[$colMapping['currency']])) {
+        $detectedCurrency = strtoupper(trim($normHeaders[$colMapping['currency']]));
+    }
+    if (!$detectedCurrency && isset($colMapping['price'])) {
+        $priceHeader = $normHeaders[$colMapping['price']];
+        if (preg_match('/[\/\(]\s*([A-Za-z]+)\s*[\)\/]?/', $priceHeader, $match)) {
+            $detectedCurrency = strtoupper(trim($match[1]));
         }
-        if (!$detectedCurrency && isset($colMapping['price'])) {
-            $priceHeader = $normHeaders[$colMapping['price']];
-            if (preg_match('/[\/\(]\s*([A-Za-z]+)\s*[\)\/]?/', $priceHeader, $match)) {
-                $detectedCurrency = strtoupper(trim($match[1]));
-            }
-        }
-        if (!$detectedCurrency) {
-            $detectedCurrency = "USD";
-        }
-        
-        //=============================================
-        // 根據貨幣決定 tax_included 的預設值
-        // 如果貨幣為 USD，預設 0；如果為 RMB/CNY，預設 0（但若 Excel 提供含税欄位則以其值為準）
-        if ($detectedCurrency === "USD") {
-            $computedTaxIncluded = 0;
-        } elseif (in_array($detectedCurrency, ["RMB", "CNY"])) {
-            $computedTaxIncluded = 0;
-        } else {
-            $computedTaxIncluded = 0;
-        }
-        
-        //=============================================
-        // 將每一行資料依據 mapping 轉換成最終格式，並自動填入 update_time、currency 與 tax_included
-        //=============================================
-        $insertedData = [];
-        foreach (array_slice($rows, 1) as $row) {
-            $data = [];
-            foreach ($fieldsMap as $field => $aliases) {
-                $data[$field] = (isset($colMapping[$field]) && isset($row[$colMapping[$field]]))
-                                ? trim($row[$colMapping[$field]])
-                                : '';
-            }
-            $data['update_time'] = date('Y-m-d H:i:s');
-            $data['currency'] = $detectedCurrency;
-            if ($taxIncludedCol !== null && isset($row[$taxIncludedCol]) && trim($row[$taxIncludedCol]) !== '') {
-                $data['tax_included'] = trim($row[$taxIncludedCol]);
-            } else {
-                $data['tax_included'] = $computedTaxIncluded;
-            }
-            $insertedData[] = $data;
-        }
-        
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(array_slice($insertedData, 0, 5), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        
-        // 正式應用中，您可以將 $insertedData 寫入資料庫，例如：
-        // foreach ($insertedData as $data) {
-        //     Db::name('chip_db')->insert($data);
-        // }
-        
+    }
+    if (!$detectedCurrency) {
+        $detectedCurrency = "USD";
+    }
+
+    // 根據貨幣決定 tax_included 預設值：USD 預設 0，若為 RMB/CNY 預設 0（可依需求調整）
+    if ($detectedCurrency === "USD") {
+        $computedTaxIncluded = 0;
+    } elseif (in_array($detectedCurrency, ["RMB", "CNY"])) {
+        $computedTaxIncluded = 0;
     } else {
-        echo "檔案上傳失敗。";
+        $computedTaxIncluded = 0;
+    }
+
+    // 將資料轉換成最終格式，每筆自動填入 update_time、currency 與 tax_included
+    $finalData = [];
+    foreach (array_slice($rows, 1) as $row) {
+        $data = [];
+        foreach ($fieldsMap as $field => $aliases) {
+            $data[$field] = (isset($colMapping[$field]) && isset($row[$colMapping[$field]]))
+                            ? trim($row[$colMapping[$field]])
+                            : '';
+        }
+        $data['update_time'] = date('Y-m-d H:i:s');
+        $data['currency'] = $detectedCurrency;
+        if ($taxIncludedCol !== null && isset($row[$taxIncludedCol]) && trim($row[$taxIncludedCol]) !== '') {
+            $data['tax_included'] = trim($row[$taxIncludedCol]);
+        } else {
+            $data['tax_included'] = $computedTaxIncluded;
+        }
+        $finalData[] = $data;
+    }
+    return $finalData;
+}
+
+/**
+ * 主程序：處理上傳檔案，合併分段後解析 Excel 並輸出結果
+ */
+function processUploadedExcel($mergedFilePath) {
+    $rows = readXLSXWithoutExtensions($mergedFilePath);
+    if (!$rows || count($rows) < 2) {
+        return "解析 Excel 文件失敗或資料不足。";
+    }
+    $finalData = processExcelRows($rows);
+    return $finalData;
+}
+
+/**
+ * 分段上傳處理：接收每個區塊並合併成完整檔案
+ */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fileId'])) {
+    // 取得分段上傳參數
+    $fileId = $_POST['fileId'];
+    $chunkIndex = isset($_POST['chunkIndex']) ? intval($_POST['chunkIndex']) : 0;
+    $totalChunks = isset($_POST['totalChunks']) ? intval($_POST['totalChunks']) : 0;
+    $fileName = isset($_POST['fileName']) ? $_POST['fileName'] : '';
+
+    // 目標檔案名稱（加入 fileId 確保唯一性）
+    $targetFile = $uploadDir . $fileId . '_' . $fileName;
+
+    // 開啟目標檔案，若存在則附加寫入，不存在則創建
+    $out = fopen($targetFile, "ab");
+    if (!$out) {
+        http_response_code(500);
+        echo "無法開啟目標檔案";
+        exit;
+    }
+    $in = fopen($_FILES['fileChunk']['tmp_name'], "rb");
+    if ($in) {
+        while ($buff = fread($in, 4096)) {
+            fwrite($out, $buff);
+        }
+        fclose($in);
+    }
+    fclose($out);
+
+    // 如果這是最後一個區塊，則進行 Excel 處理
+    if ($chunkIndex + 1 == $totalChunks) {
+        // 解析 Excel 並回傳結果
+        $result = processUploadedExcel($targetFile);
+        // (選擇性) 合併後可刪除臨時檔案
+        // unlink($targetFile);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    } else {
+        // 回傳當前區塊上傳成功訊息
+        echo "區塊 $chunkIndex 已上傳";
     }
 } else {
-?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Excel 上傳導入（完整匹配+正規化+CellRef+含税導入）</title>
-</head>
-<body>
-    <h2>上傳 Excel 文件 (僅限 XLSX 格式)</h2>
-    <form action="" method="post" enctype="multipart/form-data">
-        <input type="file" name="excel_file" accept=".xlsx" required>
-        <br><br>
-        <input type="submit" value="上傳並模擬導入數據">
-    </form>
-</body>
-</html>
-<?php
+    ?>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>分段上傳 Excel 並導入</title>
+    </head>
+    <body>
+        <h2>請透過客戶端上傳檔案</h2>
+    </body>
+    </html>
+    <?php
 }
 ?>
