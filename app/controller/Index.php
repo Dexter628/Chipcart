@@ -1,6 +1,6 @@
 <?php
 /**
- * 將 Excel 儲存格參考字母轉換為 0-based 欄位索引
+ * 將儲存格參考字母轉為 0-based 欄位索引
  * 例如："A" => 0, "B" => 1, "AA" => 26
  *
  * @param string $letters 儲存格字母部分
@@ -17,14 +17,15 @@ function colIndexFromLetter($letters) {
 }
 
 /**
- * 解析 XLSX 文件（僅限格式較簡單的 XLSX），使用 shell_exec 搭配 unzip 命令
- * 並根據每個儲存格的 r 屬性確定其正確欄位索引，補齊缺失欄位。
+ * 解析 XLSX 文件（僅適用於格式較簡單的 XLSX），
+ * 利用 shell_exec 搭配 unzip 命令提取 xl/sharedStrings.xml 與 xl/worksheets/sheet1.xml，
+ * 並使用正則式與 cell reference（r 屬性）還原正確欄位順序，補齊缺失欄位。
  *
  * @param string $filePath XLSX 檔案路徑
- * @return array|false 成功返回二維陣列（第一列為表頭），失敗返回 false
+ * @return array|false 返回二維陣列（第一列為表頭），失敗返回 false
  */
 function readXLSXWithoutExtensions($filePath) {
-    // 透過 shell_exec 取得 sharedStrings.xml 與 sheet1.xml
+    // 取出 sharedStrings.xml 與 sheet1.xml
     $sharedStringsXML = shell_exec("unzip -p " . escapeshellarg($filePath) . " xl/sharedStrings.xml");
     $sheetXML = shell_exec("unzip -p " . escapeshellarg($filePath) . " xl/worksheets/sheet1.xml");
 
@@ -32,55 +33,54 @@ function readXLSXWithoutExtensions($filePath) {
         return false;
     }
 
-    // 解析 sharedStrings.xml，利用正則取得所有 <t> 標籤內容
+    // 解析 sharedStrings.xml，取得所有 <t> 標籤內容
     $sharedStrings = [];
     if ($sharedStringsXML && preg_match_all('/<t[^>]*>(.*?)<\/t>/s', $sharedStringsXML, $matches)) {
         $sharedStrings = $matches[1];
     }
 
-    // 解析 sheet1.xml，使用正則取得所有 <row> ... </row> 區塊
     $rows = [];
+    // 解析所有 <row>…</row> 區塊
     if (preg_match_all('/<row[^>]*>(.*?)<\/row>/s', $sheetXML, $rowMatches)) {
         foreach ($rowMatches[1] as $rowContent) {
-            // 使用 cell reference r 屬性確定正確欄位
             $rowDataTemp = [];
-            if (preg_match_all('/<c\s+[^>]*>(.*?)<\/c>/s', $rowContent, $cellMatches, PREG_SET_ORDER)) {
+            // 用正則捕捉每個儲存格，並取得 r 屬性（例如 r="B1"）與其內容
+            if (preg_match_all('/<c\s+[^>]*r="([A-Z]+)\d+"[^>]*>(.*?)<\/c>/s', $rowContent, $cellMatches, PREG_SET_ORDER)) {
                 foreach ($cellMatches as $cellMatch) {
-                    $cellXml = $cellMatch[0];
+                    $colLetters = $cellMatch[1]; // 儲存格列字母
+                    $cellXmlContent = $cellMatch[2]; // 儲存格內部 XML
+                    $colIndex = colIndexFromLetter($colLetters);
+                    // 取得儲存格的型別 t 屬性（若有）
                     $cellType = "";
-                    if (preg_match('/t="([^"]+)"/', $cellXml, $tMatch)) {
+                    if (preg_match('/t="([^"]+)"/', $cellMatch[0], $tMatch)) {
                         $cellType = $tMatch[1];
                     }
                     $cellValue = "";
-                    if (preg_match('/<v>(.*?)<\/v>/s', $cellXml, $vMatch)) {
+                    // 優先從 <v> 標籤中取得數值
+                    if (preg_match('/<v>(.*?)<\/v>/s', $cellXmlContent, $vMatch)) {
                         $cellValue = $vMatch[1];
-                    } elseif ($cellType == "inlineStr") {
-                        if (preg_match('/<is>.*?<t[^>]*>(.*?)<\/t>.*?<\/is>/s', $cellXml, $inlineMatch)) {
+                    }
+                    // 若無 <v> 且型別為 inlineStr，則從 <is><t> 中取值
+                    elseif ($cellType == "inlineStr") {
+                        if (preg_match('/<is>.*?<t[^>]*>(.*?)<\/t>.*?<\/is>/s', $cellXmlContent, $inlineMatch)) {
                             $cellValue = $inlineMatch[1];
                         }
                     }
+                    // 若型別為共享字串 (s)，則用 sharedStrings 表取得真正值
                     if ($cellType === 's') {
                         $index = intval($cellValue);
                         $cellValue = isset($sharedStrings[$index]) ? $sharedStrings[$index] : $cellValue;
-                    }
-                    // 取得 cell reference r 屬性，例如 r="B1"，取出 "B" 並轉換為欄位索引
-                    $colIndex = null;
-                    if (preg_match('/r="([A-Z]+)\d+"/', $cellXml, $rMatch)) {
-                        $colIndex = colIndexFromLetter($rMatch[1]);
-                    }
-                    if ($colIndex === null) {
-                        $colIndex = count($rowDataTemp);
                     }
                     $rowDataTemp[$colIndex] = $cellValue;
                 }
             }
             if (!empty($rowDataTemp)) {
                 $maxIndex = max(array_keys($rowDataTemp));
-                $rowData = [];
+                $row = [];
                 for ($i = 0; $i <= $maxIndex; $i++) {
-                    $rowData[] = isset($rowDataTemp[$i]) ? $rowDataTemp[$i] : "";
+                    $row[] = isset($rowDataTemp[$i]) ? $rowDataTemp[$i] : "";
                 }
-                $rows[] = $rowData;
+                $rows[] = $row;
             }
         }
     }
@@ -88,7 +88,7 @@ function readXLSXWithoutExtensions($filePath) {
 }
 
 /**
- * 將表頭正規化：去除前置的 "*" 與空白
+ * 將表頭正規化：去除前置的 "*" 與空白字符
  *
  * @param string $str 原始表頭
  * @return string 正規化後的表頭
@@ -97,9 +97,9 @@ function normalizeHeader($str) {
     return trim(preg_replace('/^[\*\s]+/', '', $str));
 }
 
-//===============================================
+//==================================================
 // 主程式：上傳 XLSX、解析並映射資料
-//===============================================
+//==================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
     if ($_FILES['excel_file']['error'] === UPLOAD_ERR_OK) {
         $filePath = $_FILES['excel_file']['tmp_name'];
@@ -110,17 +110,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         if (count($rows) < 2) {
             exit("Excel 文件中沒有足夠的數據。");
         }
-
-        // 第一列作為表頭，正規化後存入 $normHeaders
+        
+        // 取出第一列作為表頭，正規化後存入 $normHeaders
         $headers = $rows[0];
         $normHeaders = [];
         foreach ($headers as $h) {
             $normHeaders[] = normalizeHeader($h);
         }
-
+        
         /*
          定義資料庫欄位對應的 Excel 表頭關鍵字（只要表頭中包含該關鍵字即可匹配），
-         包含簡體與繁體版本。
+         此處同時包含簡體與繁體版本。
         */
         $fieldsMap = [
             'part_no'            => ['P/N', 'Part No.', 'PartNo', '型号', 'Your internal Part id', 'Manufacturer Part Number', 'PART NO'],
@@ -155,8 +155,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             'part_description'   => ['产品参数', '產品參數', 'Part Description']
             // tax_included 不直接匹配，後續特殊判斷
         ];
-
-        // 建立 Excel 表頭（索引）與資料庫欄位對應關係（利用正規化後的表頭）
+        
+        // 建立 Excel 表頭（索引）與資料庫欄位對應關係（使用正規化後的表頭）
         $colMapping = [];
         foreach ($normHeaders as $index => $normHeader) {
             foreach ($fieldsMap as $field => $aliases) {
@@ -168,8 +168,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 }
             }
         }
-
-        // 檢查是否存在「含税」、「含稅」或「Tax Included」的欄位
+        
+        // 檢查是否有「含税」、「含稅」或「Tax Included」的欄位，若有則記錄該欄索引
         $taxIncludedCol = null;
         foreach ($normHeaders as $index => $normHeader) {
             if (stripos($normHeader, 'Tax Included') !== false ||
@@ -179,9 +179,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                 break;
             }
         }
-
+        
         //=============================================
-        // 判斷貨幣：先看是否有 currency 欄位，若無則從 price 標題中取
+        // 判斷貨幣：先看是否有 currency 欄位，若無則從 price 標題中解析
         //=============================================
         $detectedCurrency = "";
         if (isset($colMapping['currency']) && isset($normHeaders[$colMapping['currency']])) {
@@ -196,11 +196,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         if (!$detectedCurrency) {
             $detectedCurrency = "USD";
         }
-
+        
         //=============================================
         // 根據貨幣決定 tax_included 的預設值
-        // 如果貨幣為 USD，則預設 0 (未稅)
-        // 如果為 RMB/CNY，預設 0，但若 Excel 中有含税欄位則以其資料為準
+        // 如果貨幣為 USD，預設 0；如果為 RMB/CNY，預設 0（但若 Excel 提供含税欄位則以其值為準）
         if ($detectedCurrency === "USD") {
             $computedTaxIncluded = 0;
         } elseif (in_array($detectedCurrency, ["RMB", "CNY"])) {
@@ -208,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         } else {
             $computedTaxIncluded = 0;
         }
-
+        
         //=============================================
         // 將每一行資料依據 mapping 轉換成最終格式，並自動填入 update_time、currency 與 tax_included
         //=============================================
@@ -229,34 +228,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             }
             $insertedData[] = $data;
         }
-
+        
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array_slice($insertedData, 0, 5), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-
-        // 正式應用中，您可將 $insertedData 寫入資料庫，例如：
+        
+        // 正式應用中，您可以將 $insertedData 寫入資料庫，例如：
         // foreach ($insertedData as $data) {
         //     Db::name('chip_db')->insert($data);
         // }
+        
     } else {
         echo "檔案上傳失敗。";
     }
 } else {
-    ?>
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Excel 上傳導入（完整匹配+正規化+含税導入）</title>
-    </head>
-    <body>
-        <h2>上傳 Excel 文件 (僅限 XLSX 格式)</h2>
-        <form action="" method="post" enctype="multipart/form-data">
-            <input type="file" name="excel_file" accept=".xlsx" required>
-            <br><br>
-            <input type="submit" value="上傳並模擬導入數據">
-        </form>
-    </body>
-    </html>
-    <?php
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Excel 上傳導入（完整匹配+正規化+CellRef+含税導入）</title>
+</head>
+<body>
+    <h2>上傳 Excel 文件 (僅限 XLSX 格式)</h2>
+    <form action="" method="post" enctype="multipart/form-data">
+        <input type="file" name="excel_file" accept=".xlsx" required>
+        <br><br>
+        <input type="submit" value="上傳並模擬導入數據">
+    </form>
+</body>
+</html>
+<?php
 }
 ?>
