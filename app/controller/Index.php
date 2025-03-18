@@ -4,11 +4,11 @@
 /**
  * 直接訪問時回傳 index.html 的內容
  */
-function index(): Html
-{
-    # html 路徑: ./index.html
-    return response(file_get_contents(dirname(dirname(__FILE__)).'/view/index.html'));
-}
+public function index(): Html
+    {
+        # html路径: ../view/index.html
+        return response(file_get_contents(dirname(dirname(__FILE__)).'/view/index.html'));
+    }
 
 /**
  * 處理分段上傳
