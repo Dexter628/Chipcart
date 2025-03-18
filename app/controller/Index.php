@@ -233,9 +233,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         echo json_encode(array_slice($insertedData, 0, 5), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         
         // 正式應用中，您可以將 $insertedData 寫入資料庫，例如：
-        // foreach ($insertedData as $data) {
-        //     Db::name('chip_db')->insert($data);
-        // }
+         foreach ($insertedData as $data) {
+             Db::name('parts')->insert($data);
+         }
         
     } else {
         echo "檔案上傳失敗。";
