@@ -1,27 +1,75 @@
 <?php
 // index.php
 
-// 設定檔案上傳目錄（請確保該目錄存在且具有寫入權限）
-$uploadDir = __DIR__ . '/uploads/';
-if (!is_dir($uploadDir)) {
-    mkdir($uploadDir, 0777, true);
+/**
+ * 直接訪問時回傳 index.html 的內容
+ */
+function index(): string
+{
+    # html 路徑: ./index.html
+    return response(file_get_contents(dirname(dirname(__FILE__)).'/view/index.html'));
 }
 
 /**
- * 將儲存格參考字母轉為 0-based 欄位索引
- * 例如："A" => 0, "B" => 1, "AA" => 26
- *
- * @param string $letters 儲存格字母部分
- * @return int 欄位索引（0-based）
+ * 處理分段上傳
  */
-function colIndexFromLetter($letters) {
-    $letters = strtoupper($letters);
-    $result = 0;
-    $len = strlen($letters);
-    for ($i = 0; $i < $len; $i++) {
-        $result = $result * 26 + (ord($letters[$i]) - ord('A') + 1);
+function handleUpload(): void
+{
+    // 設定檔案上傳目錄（請確保該目錄存在且具有寫入權限）
+    $uploadDir = __DIR__ . '/uploads/';
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
     }
-    return $result - 1;
+
+    // 取得分段上傳參數
+    $fileId = $_POST['fileId'];
+    $chunkIndex = isset($_POST['chunkIndex']) ? intval($_POST['chunkIndex']) : 0;
+    $totalChunks = isset($_POST['totalChunks']) ? intval($_POST['totalChunks']) : 0;
+    $fileName = isset($_POST['fileName']) ? $_POST['fileName'] : '';
+
+    // 目標檔案名稱（加入 fileId 確保唯一性）
+    $targetFile = $uploadDir . $fileId . '_' . $fileName;
+
+    // 開啟目標檔案，若存在則附加寫入，不存在則創建
+    $out = fopen($targetFile, "ab");
+    if (!$out) {
+        http_response_code(500);
+        echo "無法開啟目標檔案";
+        exit;
+    }
+    $in = fopen($_FILES['fileChunk']['tmp_name'], "rb");
+    if ($in) {
+        while ($buff = fread($in, 4096)) {
+            fwrite($out, $buff);
+        }
+        fclose($in);
+    }
+    fclose($out);
+
+    // 如果這是最後一個區塊，則進行 Excel 處理
+    if ($chunkIndex + 1 == $totalChunks) {
+        // 解析 Excel 並回傳結果
+        $result = processUploadedExcel($targetFile);
+        // (選擇性) 合併後可刪除臨時檔案
+        // unlink($targetFile);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    } else {
+        // 回傳當前區塊上傳成功訊息
+        echo "區塊 $chunkIndex 已上傳";
+    }
+}
+
+/**
+ * 主程序：處理上傳檔案，合併分段後解析 Excel 並輸出結果
+ */
+function processUploadedExcel($mergedFilePath) {
+    $rows = readXLSXWithoutExtensions($mergedFilePath);
+    if (!$rows || count($rows) < 2) {
+        return "解析 Excel 文件失敗或資料不足。";
+    }
+    $finalData = processExcelRows($rows);
+    return $finalData;
 }
 
 /**
@@ -91,6 +139,23 @@ function readXLSXWithoutExtensions($filePath) {
 }
 
 /**
+ * 將儲存格參考字母轉為 0-based 欄位索引
+ * 例如："A" => 0, "B" => 1, "AA" => 26
+ *
+ * @param string $letters 儲存格字母部分
+ * @return int 欄位索引（0-based）
+ */
+function colIndexFromLetter($letters) {
+    $letters = strtoupper($letters);
+    $result = 0;
+    $len = strlen($letters);
+    for ($i = 0; $i < $len; $i++) {
+        $result = $result * 26 + (ord($letters[$i]) - ord('A') + 1);
+    }
+    return $result - 1;
+}
+
+/**
  * 將表頭正規化：去除前置的 "*" 與空白字符
  *
  * @param string $str 原始表頭
@@ -151,7 +216,7 @@ function processExcelRows($rows) {
         // tax_included 不直接匹配，後續特殊判斷
     ];
 
-    // 建立表頭與欄位對應關係（使用正規化後的表頭索引）
+    // 建立表頭與欄位對應：以正規化後的表頭索引
     $colMapping = [];
     foreach ($normHeaders as $index => $normHeader) {
         foreach ($fieldsMap as $field => $aliases) {
@@ -164,7 +229,7 @@ function processExcelRows($rows) {
         }
     }
 
-    // 檢查是否存在含税、含稅或 Tax Included 的欄位
+    // 檢查是否存在含税/含稅/Tax Included 的欄位
     $taxIncludedCol = null;
     foreach ($normHeaders as $index => $normHeader) {
         if (stripos($normHeader, 'Tax Included') !== false ||
@@ -182,7 +247,7 @@ function processExcelRows($rows) {
     }
     if (!$detectedCurrency && isset($colMapping['price'])) {
         $priceHeader = $normHeaders[$colMapping['price']];
-        if (preg_match('/[\/\(]\s*([A-Za-z]+)\s*[\)\/]?/', $priceHeader, $match)) {
+        if (preg_match('/[\/$]\s*([A-Za-z]+)\s*[$\/]?/', $priceHeader, $match)) {
             $detectedCurrency = strtoupper(trim($match[1]));
         }
     }
@@ -199,7 +264,7 @@ function processExcelRows($rows) {
         $computedTaxIncluded = 0;
     }
 
-    // 將每一行資料轉換成最終格式，每筆自動填入 update_time、currency 與 tax_included
+    // 將資料轉換成最終格式，每筆自動填入 update_time、currency 與 tax_included
     $finalData = [];
     foreach (array_slice($rows, 1) as $row) {
         $data = [];
@@ -220,116 +285,12 @@ function processExcelRows($rows) {
     return $finalData;
 }
 
-/**
- * 處理上傳檔案：合併分段後解析 Excel 並回傳結果（JSON 格式）
- */
-function processUploadedExcel($mergedFilePath) {
-    $rows = readXLSXWithoutExtensions($mergedFilePath);
-    if (!$rows || count($rows) < 2) {
-        return "解析 Excel 文件失敗或資料不足。";
-    }
-    $finalData = processExcelRows($rows);
-    return $finalData;
-}
-
-/**
- * 以下為分段上傳處理：
- * 當接收到 POST 請求且有 fileId 參數時，表示為分段上傳
- */
+// 主程序
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fileId'])) {
-    $fileId = $_POST['fileId'];
-    $chunkIndex = isset($_POST['chunkIndex']) ? intval($_POST['chunkIndex']) : 0;
-    $totalChunks = isset($_POST['totalChunks']) ? intval($_POST['totalChunks']) : 0;
-    $fileName = isset($_POST['fileName']) ? $_POST['fileName'] : '';
-
-    $targetFile = $uploadDir . $fileId . '_' . $fileName;
-    $out = fopen($targetFile, "ab");
-    if (!$out) {
-        http_response_code(500);
-        echo "無法開啟目標檔案";
-        exit;
-    }
-    $in = fopen($_FILES['fileChunk']['tmp_name'], "rb");
-    if ($in) {
-        while ($buff = fread($in, 4096)) {
-            fwrite($out, $buff);
-        }
-        fclose($in);
-    }
-    fclose($out);
-
-    if ($chunkIndex + 1 == $totalChunks) {
-        $result = processUploadedExcel($targetFile);
-        // 選擇性：合併後可刪除臨時檔案
-        // unlink($targetFile);
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-    } else {
-        echo "區塊 $chunkIndex 已上傳";
-    }
+    // 處理分段上傳
+    handleUpload();
 } else {
-    // 若非分段上傳請求，則顯示上傳表單
-    $html = <<<HTML
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>分段上傳 Excel 檔案</title>
-</head>
-<body>
-    <h2>分段上傳 Excel 檔案 (每段約 1MB)</h2>
-    <input type="file" id="fileInput" accept=".xlsx">
-    <button id="uploadBtn">開始上傳</button>
-    <div id="progress"></div>
-    <script>
-        document.getElementById('uploadBtn').addEventListener('click', function () {
-            var fileInput = document.getElementById('fileInput');
-            if (!fileInput.files.length) {
-                alert("請選擇檔案");
-                return;
-            }
-            var file = fileInput.files[0];
-            var chunkSize = 1024 * 1024; // 每塊 1MB
-            var totalChunks = Math.ceil(file.size / chunkSize);
-            var currentChunk = 0;
-            var fileId = Date.now() + "_" + file.name;
-            var progressDiv = document.getElementById('progress');
-
-            function uploadNextChunk() {
-                var start = currentChunk * chunkSize;
-                var end = Math.min(start + chunkSize, file.size);
-                var blob = file.slice(start, end);
-                var formData = new FormData();
-                formData.append('fileId', fileId);
-                formData.append('chunkIndex', currentChunk);
-                formData.append('totalChunks', totalChunks);
-                formData.append('fileName', file.name);
-                formData.append('fileChunk', blob);
-
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'index.php', true);
-                xhr.onload = function () {
-                    if (xhr.status === 200) {
-                        currentChunk++;
-                        progressDiv.innerText = "已上傳 " + currentChunk + " / " + totalChunks + " 區塊";
-                        if (currentChunk < totalChunks) {
-                            uploadNextChunk();
-                        } else {
-                            progressDiv.innerText = "檔案上傳完成，正在處理 Excel 檔案...";
-                            progressDiv.innerText = xhr.responseText;
-                        }
-                    } else {
-                        alert("上傳失敗，請重試");
-                    }
-                };
-                xhr.send(formData);
-            }
-            uploadNextChunk();
-        });
-    </script>
-</body>
-</html>
-HTML;
-    echo $html;
+    // 直接訪問時回傳 index.html 的內容
+    echo index();
 }
 ?>

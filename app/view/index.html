@@ -37,7 +37,7 @@
                 formData.append('fileChunk', blob);
 
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'upload.php', true);
+                xhr.open('POST', 'index.php', true);
                 xhr.onload = function () {
                     if (xhr.status === 200) {
                         currentChunk++;
