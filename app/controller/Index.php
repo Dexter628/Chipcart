@@ -6,7 +6,7 @@ use think\facade\Log;
 /**
  * 直接訪問時回傳 index.html 的內容
  */
-public function index(): Html
+function index(): Html
     {
         # html路径: ../view/index.html
         return response(file_get_contents(dirname(dirname(__FILE__)).'/view/index.html'));
