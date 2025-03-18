@@ -1,6 +1,8 @@
 <?php
 // index.php
-
+use think\response\Html;
+use think\response\Json;
+use think\facade\Log;
 /**
  * 直接訪問時回傳 index.html 的內容
  */
