@@ -1,4 +1,7 @@
 <?php
+// 引入 Parts 模型（請依據您的專案命名空間調整）
+use app\model\Parts;
+
 /**
  * 將儲存格參考字母轉為 0-based 欄位索引
  * 例如："A" => 0, "B" => 1, "AA" => 26
@@ -6,7 +9,6 @@
  * @param string $letters 儲存格字母部分
  * @return int 欄位索引（0-based）
  */
-use think\Db;
 function colIndexFromLetter($letters) {
     $letters = strtoupper($letters);
     $result = 0;
@@ -48,8 +50,8 @@ function readXLSXWithoutExtensions($filePath) {
             // 用正則捕捉每個儲存格，並取得 r 屬性（例如 r="B1"）與其內容
             if (preg_match_all('/<c\s+[^>]*r="([A-Z]+)\d+"[^>]*>(.*?)<\/c>/s', $rowContent, $cellMatches, PREG_SET_ORDER)) {
                 foreach ($cellMatches as $cellMatch) {
-                    $colLetters = $cellMatch[1]; // 儲存格列字母
-                    $cellXmlContent = $cellMatch[2]; // 儲存格內部 XML
+                    $colLetters = $cellMatch[1];
+                    $cellXmlContent = $cellMatch[2];
                     $colIndex = colIndexFromLetter($colLetters);
                     // 取得儲存格的型別 t 屬性（若有）
                     $cellType = "";
@@ -140,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             'qty_3'              => ['Qty 3'],
             'qty_3_price'        => ['Qty 3 price'],
             'supplier_code'      => ['supplier code', '供应商代码', '供应商编码', '供应商代号', '供應商代號'],
-            // update_time 為自動填入當下時間，不做匹配
+            // update_time 為自動填入，不做匹配
             'warranty'           => ['Warranty / Pedigree Rating', 'Warranty', 'Pedigree Rating'],
             'rohs_compliant'     => ['RoHS Compliant'],
             'eccn_code'          => ['ECCN Code'],
@@ -154,7 +156,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             'price_validity'     => ['Price validity'],
             'contact'            => ['联络人', '聯絡人', '业务', '業務', 'contact'],
             'part_description'   => ['产品参数', '產品參數', 'Part Description']
-            // tax_included 不直接匹配，後續特殊判斷
         ];
         
         // 建立 Excel 表頭（索引）與資料庫欄位對應關係（使用正規化後的表頭）
@@ -200,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         
         //=============================================
         // 根據貨幣決定 tax_included 的預設值
-        // 如果貨幣為 USD，預設 0；如果為 RMB/CNY，預設 0（但若 Excel 提供含税欄位則以其值為準）
+        //=============================================
         if ($detectedCurrency === "USD") {
             $computedTaxIncluded = 0;
         } elseif (in_array($detectedCurrency, ["RMB", "CNY"])) {
@@ -210,7 +211,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
         }
         
         //=============================================
-        // 將每一行資料依據 mapping 轉換成最終格式，並自動填入 update_time、currency 與 tax_included
+        // 將每一行資料依據 mapping 轉換成最終格式，並自動填入 currency 與 tax_included
+        // 注意：此處不再手動設定 update_time，讓模型自動填入時間戳
         //=============================================
         $insertedData = [];
         foreach (array_slice($rows, 1) as $row) {
@@ -220,7 +222,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
                                 ? trim($row[$colMapping[$field]])
                                 : '';
             }
-            $data['update_time'] = date('Y-m-d H:i:s');
             $data['currency'] = $detectedCurrency;
             if ($taxIncludedCol !== null && isset($row[$taxIncludedCol]) && trim($row[$taxIncludedCol]) !== '') {
                 $data['tax_included'] = trim($row[$taxIncludedCol]);
@@ -230,13 +231,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file'])) {
             $insertedData[] = $data;
         }
         
+        // 輸出前 5 筆資料 (僅供參考)
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(array_slice($insertedData, 0, 5), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         
-        // 正式應用中，您可以將 $insertedData 寫入資料庫，例如：
-         foreach ($insertedData as $data) {
-             Db::name('parts')->insert($data);
-         }
+        // 將 $insertedData 寫入資料庫 parts 表，使用 Parts 模型批量寫入
+        try {
+            (new Parts())->saveAll($insertedData);
+            echo " 資料已成功寫入資料庫。";
+        } catch (\Exception $e) {
+            echo "資料庫錯誤：" . $e->getMessage();
+        }
         
     } else {
         echo "檔案上傳失敗。";
