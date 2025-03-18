@@ -25,3 +25,9 @@ Route::get('/detail', 'Search/detail');
 Route::get('parts/search', 'parts/search');
 
 Route::get('parts/search', 'ChipSearch/search');
+
+// 訪問根目錄時，映射到 Index 控制器的 index 方法
+Route::get('/', 'index/index');
+
+// 處理上傳請求，映射到 Index 控制器的 upload 方法
+Route::post('/upload', 'index/upload');
