@@ -6,6 +6,7 @@
  * @param string $letters 儲存格字母部分
  * @return int 欄位索引（0-based）
  */
+use think\Db;
 function colIndexFromLetter($letters) {
     $letters = strtoupper($letters);
     $result = 0;
