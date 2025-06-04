@@ -15,16 +15,22 @@ class Search {
         if (empty($keyword)) {
             return json(['error' => '請輸入查詢關鍵字'], 400);
         }
-
-        $result = PartsMain::where('part_no', 'like', "%$keyword%")
-                           ->field('
-                    id, part_no, manufacturer_name, available_qty, lead_time, price, currency, 
-                    tax_included as tax_include, moq, spq, order_increment, qty_1, qty_1_price, 
-                    qty_2, qty_2_price, qty_3, qty_3_price, warranty, rohs_compliant, eccn_code, 
-                    hts_code, warehouse_code, certificate_origin, packing, date_code_range, 
-                    package, package_type, price_validity, contact, part_description
-                ')
-                           ->select();
+        $cleanedKeyword = preg_replace('/[　\s]+/u', ' ', $keyword); // 將全形/半形空格統一為半形空格
+        $terms = array_filter(explode(' ', $cleanedKeyword)); // 分詞
+        $terms = array_unique($terms); // 去重複
+        $result = PartsMain::where(function ($query) use ($terms) {
+        $query->where('part_no', 'like', "%$terms%")
+              ->whereOr('manufacturer_name', 'like', "%$terms%")
+              ->whereOr('contact', 'like', "%$terms%");
+    })
+    ->field('
+        id, part_no, manufacturer_name, available_qty, lead_time, price, currency, 
+        tax_included as tax_include, moq, spq, order_increment, qty_1, qty_1_price, 
+        qty_2, qty_2_price, qty_3, qty_3_price, warranty, rohs_compliant, eccn_code, 
+        hts_code, warehouse_code, certificate_origin, packing, date_code_range, 
+        package, package_type, price_validity, contact, part_description
+    ')
+    ->select();
 
         if ($result->isEmpty()) {
             return json(['error' => '未找到符合條件的芯片'], 404);
