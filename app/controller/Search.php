@@ -32,7 +32,7 @@ class Search {
     tax_included as tax_include, moq, spq, order_increment, qty_1, qty_1_price, 
     qty_2, qty_2_price, qty_3, qty_3_price, warranty, rohs_compliant, eccn_code, 
     hts_code, warehouse_code, certificate_origin, packing, date_code_range, 
-    package, package_type, price_validity, contact, part_description
+    package, package_type, price_validity, contact, part_description,country
 ')
 ->select();
 
