@@ -1,16 +1,6 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\app",
-    "\\app\\model",
-    "\\app\\view",
-    "\\conf",
-    "\\config",
-    "\\public",
-    "\\route",
-    "\\runtime",
-    "\\vendor"
+    ""
   ],
-  "SelectedNode": "\\app\\model\\Parts.php",
   "PreviewInSolutionExplorer": false
 }
