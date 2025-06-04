@@ -8,7 +8,7 @@ class ChipSearch
 {
     public function search()
     {
-        $keyword = trim(Request::param('keyword', ''));
+        $keyword = strtolower(trim(Request::param('keyword', '')));
         
         if (empty($keyword)) {
             return json(['code' => 400, 'msg' => '请输入搜索关键字']);
@@ -17,8 +17,8 @@ class ChipSearch
         try {
             $result = Db::table('parts')
     ->where(function ($query) use ($keyword) {
-        $query->whereRaw('LOWER(part_no) LIKE ?', ["%{$keyword}%"])
-              ->whereOrRaw('LOWER(manufacturer_name) LIKE ?', ["%{$keyword}%"])
+        $query->whereRaw('LOWER(manufacturer_name) LIKE ?', ["%{$keyword}%"])
+              ->whereOrRaw('LOWER(part_no) LIKE ?', ["%{$keyword}%"])
               ->whereOrRaw('LOWER(contact) LIKE ?', ["%{$keyword}%"]);
     })
     ->field("id, part_no, manufacturer_name, available_qty, lead_time, price, currency, tax_included as tax_include, moq, spq, order_increment, qty_1, qty_1_price, qty_2, qty_2_price, qty_3, qty_3_price, warranty, rohs_compliant, eccn_code, hts_code, warehouse_code, certificate_origin, packing, date_code_range, package, package_type, price_validity, contact, part_description")
@@ -27,7 +27,8 @@ class ChipSearch
 
             return json([
                 'code' => 0,
-                'data' => $result ?: []
+                'data' => $result ?: [],
+                'msg' => $result ? '查詢成功' : '未找到符合條件的芯片'
             ]);
 
         } catch (\Exception $e) {
