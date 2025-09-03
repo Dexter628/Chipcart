@@ -7,66 +7,154 @@ use think\facade\Request;
 class Sh
 {
     /**
-     * ÃöÁä¦r¬d¸ß¥D­nªä¤ù«H®§¡]¤ä´©¤À­¶¡^
+     * é—œéµå­—æŸ¥è©¢ä¸»è¦èŠ¯ç‰‡ä¿¡æ¯ï¼ˆæ”¯æ´åˆ†é ï¼‰
+     * 
+     * @return \think\Response
      */
     public function index()
     {
+        // 1. èŽ·å–å¹¶éªŒè¯è¾“å…¥å‚æ•°
         $keyword = Request::param('keyword', '', 'trim');
         if (empty($keyword)) {
-            return json(['error' => '½Ð¿é¤J¬d¸ßÃöÁä¦r'], 400);
+            return json(['error' => 'è«‹è¼¸å…¥æŸ¥è©¢é—œéµå­—'], 400);
         }
 
-        // ³B²zÃöÁä¦r
-        $cleanedKeyword = preg_replace('/[¡@\s]+/u', ' ', $keyword); // ±N¥þ§Î/¥b§ÎªÅ®æÂà¬°³æ¤@¥b§ÎªÅ®æ
-        $terms = array_filter(explode(' ', $cleanedKeyword));       // ¤Àµü
-        $terms = array_unique($terms);                              // ¥h°£­«½Æµü
+        // 2. å¤„ç†å…³é”®è¯ï¼ˆå®‰å…¨è¿‡æ»¤å’Œåˆ†è¯ï¼‰
+        $processedTerms = $this->processSearchKeyword($keyword);
+        if (empty($processedTerms)) {
+            return json(['error' => 'ç„¡æ•ˆçš„æŸ¥è©¢é—œéµå­—'], 400);
+        }
 
-        // ¤À­¶°Ñ¼Æ
+        // 3. å¤„ç†åˆ†é¡µå‚æ•°
+        $pageParams = $this->getPaginationParams();
+        
+        // 4. æž„å»ºæŸ¥è¯¢æ¡ä»¶
+        $condition = $this->buildSearchCondition($processedTerms);
+
+        // 5. æ‰§è¡ŒæŸ¥è¯¢
+        $queryResult = $this->executeSearchQuery($condition, $pageParams);
+
+        // 6. è¿”å›žæ ¼å¼åŒ–ç»“æžœ
+        return $this->formatSearchResult($queryResult, $pageParams);
+    }
+
+    /**
+     * å¤„ç†æœç´¢å…³é”®è¯
+     * 
+     * @param string $keyword
+     * @return array
+     */
+    protected function processSearchKeyword(string $keyword): array
+    {
+        // ç¼–ç è½¬æ¢å’ŒéªŒè¯
+        $cleanedKeyword = mb_convert_encoding($keyword, 'UTF-8', 'UTF-8');
+        
+        // æ›¿æ¢å„ç§ç©ºæ ¼ä¸ºå•ä¸ªåŠè§’ç©ºæ ¼
+        $cleanedKeyword = preg_replace('/[ã€€\s]+/u', ' ', $cleanedKeyword);
+        
+        // åˆ†è¯å¹¶åŽ»é‡
+        $terms = array_filter(explode(' ', $cleanedKeyword));
+        $terms = array_unique($terms);
+        
+        // è¿‡æ»¤å±é™©å­—ç¬¦
+        return array_map(function($term) {
+            return addslashes(trim($term));
+        }, $terms);
+    }
+
+    /**
+     * èŽ·å–åˆ†é¡µå‚æ•°
+     * 
+     * @return array
+     */
+    protected function getPaginationParams(): array
+    {
         $page = max(1, (int)Request::param('page', 1));
-        $pageSize = max(1, (int)Request::param('page_size', 50));
+        $pageSize = min(max(1, (int)Request::param('page_size', 50)), 200); // é™åˆ¶æœ€å¤§200æ¡
         $offset = ($page - 1) * $pageSize;
+        
+        return [
+            'page' => $page,
+            'page_size' => $pageSize,
+            'offset' => $offset
+        ];
+    }
 
-        // ¬d¸ß±ø¥ó«Ê¸Ë
-        $condition = function ($query) use ($terms) {
+    /**
+     * æž„å»ºæœç´¢æ¡ä»¶
+     * 
+     * @param array $terms
+     * @return callable
+     */
+    protected function buildSearchCondition(array $terms): callable
+    {
+        return function ($query) use ($terms) {
             foreach ($terms as $term) {
                 $query->whereOr(function ($q) use ($term) {
-                    $q->where('part_no', 'like', "%$term%")
-                      ->whereOr('manufacturer_name', 'like', "%$term%")
-                      ->whereOr('contact', 'like', "%$term%");
+                    $q->where('part_no', 'like', "%{$term}%")
+                      ->whereOr('manufacturer_name', 'like', "%{$term}%")
+                      ->whereOr('contact', 'like', "%{$term}%")
+                      ->whereOr('part_description', 'like', "%{$term}%");
                 });
             }
         };
+    }
 
-        // Á`µ§¼Æ¬d¸ß
+    /**
+     * æ‰§è¡Œæœç´¢æŸ¥è¯¢
+     * 
+     * @param callable $condition
+     * @param array $pageParams
+     * @return array
+     */
+    protected function executeSearchQuery(callable $condition, array $pageParams): array
+    {
+        // æŸ¥è¯¢æ€»æ•°é‡
         $total = PartsMain::where($condition)->count();
-
-        // ¤À­¶¸ê®Æ¬d¸ß
+        
+        // æŸ¥è¯¢åˆ†é¡µæ•°æ®
         $result = PartsMain::where($condition)
-            ->field('
-                id, part_no, manufacturer_name, available_qty, lead_time, price, currency, 
-                tax_included as tax_include, moq, spq, order_increment, qty_1, qty_1_price, 
-                qty_2, qty_2_price, qty_3, qty_3_price, warranty, rohs_compliant, eccn_code, 
-                hts_code, warehouse_code, certificate_origin, packing, date_code_range, 
-                package, package_type, price_validity, contact, part_description, country,supplier_code,update_time
-            ')
-            ->limit($offset, $pageSize)
+            ->field([
+                'id', 'part_no', 'manufacturer_name', 'available_qty', 
+                'lead_time', 'price', 'currency', 'tax_included as tax_include',
+                'moq', 'spq', 'order_increment', 
+                'qty_1', 'qty_1_price', 'qty_2', 'qty_2_price', 
+                'qty_3', 'qty_3_price', 'warranty', 'rohs_compliant', 
+                'eccn_code', 'hts_code', 'warehouse_code', 
+                'certificate_origin', 'packing', 'date_code_range', 
+                'package', 'package_type', 'price_validity', 
+                'contact', 'part_description', 'country',
+                'supplier_code', 'update_time'
+            ])
+            ->limit($pageParams['offset'], $pageParams['page_size'])
             ->select();
+            
+        return [
+            'data' => $result,
+            'total' => $total
+        ];
+    }
 
-        if ($result->isEmpty()) {
-            return json([
-                'data' => [],
-                'total' => $total,
-                'page' => $page,
-                'page_size' => $pageSize,
-                'message' => '¥¼§ä¨ì²Å¦X±ø¥óªºªä¤ù'
-            ], 200);
+    /**
+     * æ ¼å¼åŒ–æœç´¢ç»“æžœ
+     * 
+     * @param array $queryResult
+     * @param array $pageParams
+     * @return \think\Response
+     */
+    protected function formatSearchResult(array $queryResult, array $pageParams)
+    {
+        $response = [
+            'data' => $queryResult['data']->isEmpty() ? [] : $queryResult['data'],
+            'total' => $queryResult['total'],
+            'page' => $pageParams['page'],
+            'page_size' => $pageParams['page_size']
+        ];
+
+        if ($queryResult['data']->isEmpty()) {
+            $response['message'] = 'æœªæ‰¾åˆ°ç¬¦åˆæ¢ä»¶çš„èŠ¯ç‰‡';
         }
 
-        return json([
-            'data' => $result,
-            'total' => $total,
-            'page' => $page,
-            'page_size' => $pageSize
-        ]);
+        return json($response);
     }
 }
