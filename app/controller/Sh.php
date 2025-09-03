@@ -16,13 +16,13 @@ class Sh
         // 1. 获取并验证输入参数
         $keyword = Request::param('keyword', '', 'trim');
         if (empty($keyword)) {
-            return json(['error' => '請輸入查詢關鍵字'], 400);
+            return json(['error' => 'Please enter search keywords'], 400);
         }
 
         // 2. 处理关键词（安全过滤和分词）
         $processedTerms = $this->processSearchKeyword($keyword);
         if (empty($processedTerms)) {
-            return json(['error' => '無效的查詢關鍵字'], 400);
+            return json(['error' => 'Invalid search keywords'], 400);
         }
 
         // 3. 处理分页参数
@@ -152,7 +152,7 @@ class Sh
         ];
 
         if ($queryResult['data']->isEmpty()) {
-            $response['message'] = '未找到符合條件的芯片';
+            $response['message'] = 'No matching chips found';
         }
 
         return json($response);
